@@ -9,23 +9,24 @@ export default function App() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.REACT_APP_ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: "You are an AI assistant to Dr. Osman Elrayah, Internal Medicine Specialist with 25 years experience.",
-          messages: [{role: "user", content: input}]
-        })
-      });
+      const key = process.env.REACT_APP_GEMINI_KEY;
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are an AI assistant to Dr. Osman Elrayah Omar Hassabalah, Internal Medicine Specialist with 25 years experience. Answer professionally and evidence-based.\n\n${input}`
+              }]
+            }]
+          })
+        }
+      );
       const data = await res.json();
-      setResponse(data.content?.[0]?.text || "No response");
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+      setResponse(text);
     } catch(e) {
       setResponse("Error: " + e.message);
     }
@@ -38,25 +39,21 @@ export default function App() {
         <h2 style={{color:"#D4A017",margin:0}}>Dr. Osman Elrayah Omar Hassabalah</h2>
         <p style={{color:"#6b7280",margin:"4px 0 0"}}>Internal Medicine · Telehealth · Medical Advisory · Wellness · Aesthetic</p>
       </div>
-      <textarea
-        value={input}
-        onChange={e=>setInput(e.target.value)}
-        placeholder="Enter your clinical query..."
-        rows={4}
-        style={{width:"100%",background:"#161b29",border:"1px solid #2a3040",borderRadius:8,color:"#e8e0d0",padding:12,fontSize:14,boxSizing:"border-box",fontFamily:"sans-serif"}}
-      />
+      <textarea value={input} onChange={e=>setInput(e.target.value)}
+        placeholder="Enter your clinical query..." rows={4}
+        style={{width:"100%",background:"#161b29",border:"1px solid #2a3040",borderRadius:8,color:"#e8e0d0",padding:12,fontSize:14,boxSizing:"border-box",fontFamily:"sans-serif"}}/>
       <button onClick={run} disabled={loading}
         style={{marginTop:10,background:loading?"#2a2f3e":"#D4A017",color:loading?"#6b7280":"#000",border:"none",borderRadius:8,padding:"10px 24px",cursor:loading?"not-allowed":"pointer",fontWeight:700,fontSize:14}}>
         {loading?"Generating...":"▶ Run"}
       </button>
-      {response && (
+      {response&&(
         <div style={{marginTop:20,background:"#161b29",border:"1px solid #D4A01744",borderRadius:8,padding:16}}>
           <div style={{color:"#D4A017",fontWeight:700,marginBottom:8}}>AI Response:</div>
           <div style={{lineHeight:1.8,whiteSpace:"pre-wrap",fontSize:14}}>{response}</div>
         </div>
       )}
       <div style={{textAlign:"center",marginTop:40,fontSize:11,color:"#2a3050"}}>
-        Dr. Osman Elrayah · AI Dashboard · Powered by Claude
+        Dr. Osman Elrayah · AI Dashboard · Powered by Gemini
       </div>
     </div>
   );
