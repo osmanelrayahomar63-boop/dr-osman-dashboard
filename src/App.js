@@ -9,52 +9,96 @@ export default function App() {
     if (!input.trim()) return;
     setLoading(true);
     try {
-      const key = process.env.REACT_APP_GEMINI_KEY;
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`,
-        {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `You are an AI assistant to Dr. Osman Elrayah Omar Hassabalah, Internal Medicine Specialist with 25 years experience. Answer professionally and evidence-based.\n\n${input}`
-              }]
-            }]
-          })
-        }
-      );
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input })
+      });
       const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
-      setResponse(text);
-    } catch(e) {
-      setResponse("Error: " + e.message);
+      setResponse(data.response || data.error || "No response");
+    } catch (err) {
+      setResponse("Error: " + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div style={{background:"#0a0e1a",minHeight:"100vh",color:"#e8e0d0",padding:20,fontFamily:"sans-serif"}}>
-      <div style={{borderBottom:"1px solid #D4A01744",paddingBottom:16,marginBottom:20}}>
-        <h2 style={{color:"#D4A017",margin:0}}>Dr. Osman Elrayah Omar Hassabalah</h2>
-        <p style={{color:"#6b7280",margin:"4px 0 0"}}>Internal Medicine · Telehealth · Medical Advisory · Wellness · Aesthetic</p>
-      </div>
-      <textarea value={input} onChange={e=>setInput(e.target.value)}
-        placeholder="Enter your clinical query..." rows={4}
-        style={{width:"100%",background:"#161b29",border:"1px solid #2a3040",borderRadius:8,color:"#e8e0d0",padding:12,fontSize:14,boxSizing:"border-box",fontFamily:"sans-serif"}}/>
-      <button onClick={run} disabled={loading}
-        style={{marginTop:10,background:loading?"#2a2f3e":"#D4A017",color:loading?"#6b7280":"#000",border:"none",borderRadius:8,padding:"10px 24px",cursor:loading?"not-allowed":"pointer",fontWeight:700,fontSize:14}}>
-        {loading?"Generating...":"▶ Run"}
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: "#0a0a0a",
+      color: "#fff",
+      fontFamily: "Georgia, serif",
+      padding: "2rem"
+    }}>
+      <h1 style={{ color: "#f5a623", fontSize: "1.8rem" }}>
+        Dr. Osman Elrayah Omar Hassabalah
+      </h1>
+      <p style={{ color: "#888", marginBottom: "2rem" }}>
+        Internal Medicine · Telehealth · Medical Advisory · Wellness · Aesthetic
+      </p>
+
+      <hr style={{ borderColor: "#333", marginBottom: "2rem" }} />
+
+      <textarea
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        placeholder="Enter your medical query..."
+        rows={4}
+        style={{
+          width: "100%",
+          backgroundColor: "#1a1a2e",
+          color: "#fff",
+          border: "1px solid #333",
+          borderRadius: "8px",
+          padding: "1rem",
+          fontSize: "1rem",
+          resize: "vertical",
+          boxSizing: "border-box"
+        }}
+      />
+
+      <button
+        onClick={run}
+        disabled={loading}
+        style={{
+          marginTop: "1rem",
+          backgroundColor: "#f5a623",
+          color: "#000",
+          border: "none",
+          borderRadius: "8px",
+          padding: "0.8rem 2rem",
+          fontSize: "1rem",
+          cursor: loading ? "not-allowed" : "pointer",
+          fontWeight: "bold"
+        }}
+      >
+        {loading ? "⏳ Loading..." : "▶ Run"}
       </button>
-      {response&&(
-        <div style={{marginTop:20,background:"#161b29",border:"1px solid #D4A01744",borderRadius:8,padding:16}}>
-          <div style={{color:"#D4A017",fontWeight:700,marginBottom:8}}>AI Response:</div>
-          <div style={{lineHeight:1.8,whiteSpace:"pre-wrap",fontSize:14}}>{response}</div>
+
+      {response && (
+        <div style={{
+          marginTop: "2rem",
+          backgroundColor: "#1a1a2e",
+          border: "1px solid #f5a623",
+          borderRadius: "8px",
+          padding: "1.5rem"
+        }}>
+          <h3 style={{ color: "#f5a623", marginTop: 0 }}>AI Response:</h3>
+          <p style={{ lineHeight: "1.8", whiteSpace: "pre-wrap" }}>
+            {response}
+          </p>
         </div>
       )}
-      <div style={{textAlign:"center",marginTop:40,fontSize:11,color:"#2a3050"}}>
+
+      <footer style={{
+        marginTop: "3rem",
+        color: "#444",
+        fontSize: "0.8rem",
+        textAlign: "center"
+      }}>
         Dr. Osman Elrayah · AI Dashboard · Powered by Gemini
-      </div>
+      </footer>
     </div>
   );
-}
+  }
